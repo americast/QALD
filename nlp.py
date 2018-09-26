@@ -3,6 +3,7 @@ import nltk
 from nltk.corpus import treebank
 import spacy
 from spacy import displacy
+from nltk import Tree
 spacy.load('en')
 
 
@@ -13,7 +14,7 @@ query = []
 dataset = []
 
 def getdata():
-	input_file = open('data/LargeDataset.json','r')
+	input_file = open('LargeDataset.json','r')
 	json_decode=json.load(input_file)
 	data = json_decode['questions']
 	for item in data:
@@ -49,11 +50,17 @@ getdata()
 
 print("########### SPACY #############")
 
+def to_nltk_tree(node):
+    if node.n_lefts + node.n_rights > 0:
+        return Tree(node.orth_, [to_nltk_tree(child) for child in node.children])
+    else:
+        return node.orth_
+
 length = len(data_id)
 
 nlp = spacy.load('en_core_web_sm')
 
-for i in range(5,10):
+for i in range(95,100):
 	print("\n\n")
 	print(data_id[i])
 	print(question[i])
@@ -61,10 +68,10 @@ for i in range(5,10):
 	doc = nlp(question[i])
 
 	print("POS Tagging: ")
-	pos_list = []
-	for token in doc:
-	    pos_list.append((token.text, token.pos_, token.tag_, spacy.explain(token.tag_)))
-	print(pos_list)
+	# pos_list = []
+	# for token in doc:
+	#     pos_list.append((token.text, token.pos_, token.tag_, spacy.explain(token.tag_)))
+	# print(pos_list)
 
 	print("\nNamed Entity Recognition: ")
 	ner_list = []
@@ -73,9 +80,11 @@ for i in range(5,10):
 	print(ner_list)
 
 	print("\nTokens to take: ")
-	notToTake = ['VBZ','VBD','VBP','IN','DT','.','PRP']
+	notToTake = ['VBZ','VBD','VBP','IN','DT','.','PRP','WDT','WRB','WP']
 	toTake = []
 	for token in doc:
 		if(token.tag_ not in notToTake):
 			toTake.append(token)
 	print(toTake)
+
+	[to_nltk_tree(sent.root).pretty_print() for sent in doc.sents]
