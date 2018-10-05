@@ -7,7 +7,7 @@ from nltk.corpus import treebank
 import spacy
 from spacy import displacy
 from nltk import Tree
-import pudb
+#import pudb
 from nltk import Tree
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
@@ -16,7 +16,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 
 porter_stemmer = PorterStemmer()
-stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this'] 
+stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this' ,'where'] 
 
 en_nlp = spacy.load('en')
 
@@ -106,6 +106,23 @@ def entity_recogniser ( text ) :
 # 	for i in range(num_words):
 
 def generate_parse_tree( text ):
+	os.environ['STANFORD_PARSER'] = '/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27' #'stanford-parser'
+	os.environ['STANFORD_MODELS'] = '/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27' #'stanford-parser'
+	from nltk.parse.stanford import StanfordParser
+	from nltk.parse.stanford import StanfordDependencyParser
+	from nltk.tag import StanfordNERTagger
+	from nltk.tree import ParentedTree, Tree
+	from graphviz import Source
+
+	parser = StanfordParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
+	dep_parser = StanfordDependencyParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
+
+	a = list(parser.raw_parse("who wrote the book Leave It to Smith?"))
+	print(a)
+
+	print("#################")
+	print([parse.tree() for parse in dep_parser.raw_parse(text)])
+
 
 def find_uri( tokens ):
 	for token in tokens:
@@ -127,10 +144,16 @@ def find_uri( tokens ):
 		results = sparql.query().convert()
 		print(results['results']['bindings'][0]['s']['value'])
 
-def predicate_recogniser( query ):
+def predicate_recogniser( query,entities ):
+	query = query.strip(",")
+	query = query.strip("?")
+	query = query.strip(".")
+	query = query.strip(":")
+	query = query.strip(";")
+	query = query.strip()
 	tokens = word_tokenize(query) 
 	  
-	filtered_tokens = [w for w in tokens if not w in stop_words] 
+	filtered_tokens = [w for w in tokens if not w.lower() in stop_words] 
 	  
 	# filtered_tokens = [] 
 	  
@@ -138,16 +161,20 @@ def predicate_recogniser( query ):
 	#     if w not in stop_words: 
 	#         filtered_tokens.append(w) 
 	  
-	print(tokens) 
-	print(filtered_tokens) 
 
-	entities = []
+	print("filtered predicates: "+str(filtered_tokens)) 
 
-	raw_predicates= [w for w in filtered_tokens if not w in entities]
-
+	entities_l = [w.lower() for w in entities]
+	#print("l "+str(entities_l))
+	
+	raw_predicates= []
+	for w in filtered_tokens:
+		if w.lower() not in entities_l:
+			raw_predicates.append(w)
+	print("raw predicates "+str(raw_predicates))
 	stemmed_predicates = []
 
-	for w in filtered_tokens:
+	for w in raw_predicates:
 		stemmed_predicates.append(porter_stemmer.stem(w))
 
 	print(stemmed_predicates)
@@ -156,6 +183,17 @@ def predicate_recogniser( query ):
 text = input("Enter text: ")
 entities , hyphenated_text = entity_recogniser(text)
 generate_parse_tree( hyphenated_text )
+
+text = text.strip(",")
+text = text.strip("?")
+text = text.strip(".")
+text = text.strip(":")
+text = text.strip(";")
+text = text.strip()
+entities , hyphenated_text = entity_recogniser(text)
+del os.environ['http_proxy']
+del os.environ['https_proxy']
+
 find_uri( entities )
-stemmed_predicates = predicate_recogniser(text)
+stemmed_predicates = predicate_recogniser(text, entities)
 find_uri( stemmed_predicates )
