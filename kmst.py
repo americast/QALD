@@ -116,6 +116,7 @@ def generate_parse_tree( text ):
 
 def find_uri( tokens ):
 	for token in tokens:
+		token = token.replace("_", " ")
 		sparql = SPARQLWrapper("http://10.35.32.94:9999/blazegraph/namespace/DBpedia/sparql")
 		sparql.setQuery("""
 			prefix bds: <http://www.bigdata.com/rdf/search#>
@@ -132,8 +133,12 @@ def find_uri( tokens ):
 		""")
 		sparql.setReturnFormat(JSON)
 		results = sparql.query().convert()
+		#print("result: "+str(results))
 		try:
-			print(results['results']['bindings'][0]['s']['value'])
+			for i in results['results']['bindings']:
+				#print("i: "+str(i))
+				if i['rank']['value']=='1':
+					print(i['s']['value'])
 		except:
 			print("URI not found for token "+token)
 
