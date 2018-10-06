@@ -20,7 +20,7 @@ stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there
 
 en_nlp = spacy.load('en')
 
-def entity_recogniser ( text ) :
+def entity_recogniser ( text , printer=True) :
 	text_spotlight = copy(text)
 	text_spotlight = text_spotlight.replace(" ","%20").replace(",","%2C").replace("?","%3F")
 
@@ -43,8 +43,8 @@ def entity_recogniser ( text ) :
 		spotlight_ners_capitalised.append(text_here[0].upper()+text_here[1:])
 		spotlight_ners_hyphenated.append((text_here[0].upper()+text_here[1:]).replace(" ","_"))
 
-
-	print("spotlight ners: "+str(spotlight_ners_hyphenated))
+	if printer:
+		print("NERs from DBpedia spotlight: "+str(spotlight_ners_hyphenated))
 
 	text_pn = copy(text)
 
@@ -74,7 +74,7 @@ def entity_recogniser ( text ) :
 				entities.append(entity.strip().replace(" ","_"))
 				entities_org.append(entity.strip())
 		else:
-			if (text_pn[i] == "at" or text_pn[i] == "is" or text_pn[i] == "in" or text_pn[i] == "of") and entity_found:
+			if (text_pn[i] == "at" or text_pn[i] == "is" or text_pn[i] == "in" or text_pn[i] == "of" or text_pn[i].lower() == "the" or text_pn[i].lower() == "with") and entity_found:
 				entity_now+=text_pn[i]+" "
 			else:
 				entity = entity_now.strip()
@@ -84,8 +84,8 @@ def entity_recogniser ( text ) :
 					entities_org.append(entity)
 					entity_now=""
 				entity = ""
-
-	print("Entities finally: "+str(entities))
+	if printer:
+		print("Entities found: "+str(entities))
 	# print(entities_org)
 
 	for i in range(len(entities)):
@@ -94,7 +94,8 @@ def entity_recogniser ( text ) :
 
 		text_pn_org = text_pn_org.replace(entity_org, entity)
 
-	print("Hyphenated queries: " + text_pn_org)
+	if printer:
+		print("Hyphenated query: " + text_pn_org)
 
 	return ( entities , text_pn_org )
 
@@ -106,22 +107,11 @@ def entity_recogniser ( text ) :
 # 	for i in range(num_words):
 
 def generate_parse_tree( text ):
-	os.environ['STANFORD_PARSER'] = '/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27' #'stanford-parser'
-	os.environ['STANFORD_MODELS'] = '/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27' #'stanford-parser'
-	from nltk.parse.stanford import StanfordParser
-	from nltk.parse.stanford import StanfordDependencyParser
-	from nltk.tag import StanfordNERTagger
-	from nltk.tree import ParentedTree, Tree
-	from graphviz import Source
-
-	parser = StanfordParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
-	dep_parser = StanfordDependencyParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
-
-	a = list(parser.raw_parse(text))
-	print(a)
-
-	print("#################")
-	print([parse.tree() for parse in dep_parser.raw_parse(text)])
+	#print("text: "+text)
+	text_here = text.replace(" ","+").replace("?","%3F").replace(",","%2C")
+	r = os.popen('curl -sX GET http://nlp.stanford.edu:8080/parser/index.jsp?query='+text_here+'&parserSelect=English&parse=Parse').read()
+	print(r.split('<pre id="parse" class="spacingFree">')[1].split("</pre>")[0])
+	
 
 
 def find_uri( tokens ):
@@ -142,9 +132,13 @@ def find_uri( tokens ):
 		""")
 		sparql.setReturnFormat(JSON)
 		results = sparql.query().convert()
-		print(results['results']['bindings'][0]['s']['value'])
+		try:
+			print(results['results']['bindings'][0]['s']['value'])
+		except:
+			print("URI not found for token "+token)
 
 def predicate_recogniser( query,entities ):
+	query = query.strip()
 	query = query.strip(",")
 	query = query.strip("?")
 	query = query.strip(".")
@@ -181,7 +175,7 @@ def predicate_recogniser( query,entities ):
 	return stemmed_predicates
 
 text = input("Enter text: ")
-entities , hyphenated_text = entity_recogniser(text)
+entities , hyphenated_text = entity_recogniser(text, printer=False)
 generate_parse_tree( hyphenated_text )
 
 text = text.strip()
@@ -193,11 +187,27 @@ text = text.strip(";")
 text = text.strip()
 
 entities , hyphenated_text = entity_recogniser(text)
-del os.environ['http_proxy']
-del os.environ['https_proxy']
-del os.environ['HTTP_PROXY']
-del os.environ['HTTPS_PROXY']
+
+try:
+	del os.environ['http_proxy']
+except:
+	pass
+
+try:
+	del os.environ['https_proxy']
+except:
+	pass
+
+try:
+	del os.environ['HTTP_PROXY']
+except:
+	pass
+
+try:
+	del os.environ['HTTPS_PROXY']
+except:
+	pass
 
 find_uri( entities )
 stemmed_predicates = predicate_recogniser(text, entities)
-find_uri( stemmed_predicates )
+#find_uri( stemmed_predicates )
