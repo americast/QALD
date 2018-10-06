@@ -16,7 +16,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 
 porter_stemmer = PorterStemmer()
-stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this' ,'where'] 
+stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this' ,'where', 'many', 'much'] 
 
 en_nlp = spacy.load('en')
 
@@ -74,7 +74,7 @@ def entity_recogniser ( text , printer=True) :
 				entities.append(entity.strip().replace(" ","_"))
 				entities_org.append(entity.strip())
 		else:
-			if (text_pn[i] == "at" or text_pn[i] == "is" or text_pn[i] == "in" or text_pn[i] == "of" or text_pn[i].lower() == "the" or text_pn[i].lower() == "with") and entity_found:
+			if (text_pn[i].lower() == "at" or text_pn[i] == "is" or text_pn[i] == "in" or text_pn[i] == "of" or text_pn[i].lower() == "the" or text_pn[i].lower() == "with") and entity_found:
 				entity_now+=text_pn[i]+" "
 			else:
 				entity = entity_now.strip()
@@ -209,5 +209,5 @@ except:
 	pass
 
 find_uri( entities )
-stemmed_predicates = predicate_recogniser(text, entities)
+stemmed_predicates = predicate_recogniser(hyphenated_text, entities)
 #find_uri( stemmed_predicates )
