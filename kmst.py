@@ -117,7 +117,7 @@ def generate_parse_tree( text ):
 	parser = StanfordParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
 	dep_parser = StanfordDependencyParser(model_path="/home/sarthak/Desktop/KMST/QALD/stanford-parser-full-2018-02-27/stanford-parser-3.9.1-models/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
 
-	a = list(parser.raw_parse("who wrote the book Leave It to Smith?"))
+	a = list(parser.raw_parse(text))
 	print(a)
 
 	print("#################")
@@ -184,15 +184,19 @@ text = input("Enter text: ")
 entities , hyphenated_text = entity_recogniser(text)
 generate_parse_tree( hyphenated_text )
 
+text = text.strip()
 text = text.strip(",")
 text = text.strip("?")
 text = text.strip(".")
 text = text.strip(":")
 text = text.strip(";")
 text = text.strip()
+
 entities , hyphenated_text = entity_recogniser(text)
 del os.environ['http_proxy']
 del os.environ['https_proxy']
+del os.environ['HTTP_PROXY']
+del os.environ['HTTPS_PROXY']
 
 find_uri( entities )
 stemmed_predicates = predicate_recogniser(text, entities)
