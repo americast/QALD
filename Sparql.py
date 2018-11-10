@@ -281,11 +281,11 @@ else:
 		for i in keywords_gen:
 			if(i != obj):
 				pred=i
-		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
+		sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 	if(len(keywords_gen)==3):
 		obj=entities[0]
 		pred=refined_predicates[0]+refined_predicates[1]
-		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
+		sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 
 
 sparql_query = sparql_query + "}"
