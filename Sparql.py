@@ -104,6 +104,9 @@ def entity_recogniser ( text ) :
 	return ( entities , text_pn_org )
 
 
+def edge_replacer(text):
+	return text.replace("high", "height").replace("employees","numberOfEmployees").replace("muchcost","budget").replace("tall","height")
+
 
 def predicate_recogniser( query,entities ):
 	query = query.strip(",")
@@ -256,7 +259,7 @@ if(sub_flag):
 			for i in keywords_gen:
 				if(i!=obj):
 					pred=i
-			sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+" .\n"
+			sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 		elif(len(keywords_gen)==3):
 			for i in pos_list:
 				if((i[0] in keywords_gen) and (i[1]=='VERB')):
@@ -264,7 +267,7 @@ if(sub_flag):
 			for i in pos_list:
 				if((i[0] in entities)):
 					obj=i[0]
-			sparql_query = sparql_query + "\t?x\tdbo:"+pred+"\tres:"+obj+" .\n"
+			sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?x .\n"
 			sparql_query = sparql_query + "\t?x\trdf:type\tres:"+subj+" .\n"
 else:
 	if(len(keywords_gen)==2):
@@ -286,4 +289,5 @@ else:
 
 
 sparql_query = sparql_query + "}"
+sparql_query = edge_replacer(sparql_query)
 print(sparql_query)
