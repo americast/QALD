@@ -194,6 +194,10 @@ print("\nsubject:" + str(subject) + "\n")
 
 stemmed_predicates,refined_predicates = predicate_recogniser(hyphenated_text, entities)
 
+
+
+
+
 sparql_query="PREFIX dbo: <http://dbpedia.org/ontology/>\nPREFIX res: <http://dbpedia.org/resource/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 
 
@@ -260,3 +264,6 @@ else:
 
 sparql_query = sparql_query + "}"
 print(sparql_query)
+f = open("out", "w")
+f.write(sparql_query)
+f.close()
