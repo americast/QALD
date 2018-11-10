@@ -24,7 +24,7 @@ query = []
 dataset = []
 
 porter_stemmer = PorterStemmer()
-stop_words = ['ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this' ,'where'] 
+stop_words = ['many','give','some','number','ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than' ,'this' ,'where'] 
 
 def entity_recogniser ( text ) :
 	text_spotlight = copy(text)
@@ -173,6 +173,8 @@ query_type=0
 if(doc[0].text in boolean_query):
 	query_type=1
 
+
+
 entities , hyphenated_text = entity_recogniser(text)
 print("\n")
 
@@ -208,7 +210,12 @@ print("\n")
 if(query_type):
 	sparql_query = sparql_query + "ASK\nWHERE{\n"
 else:
-	sparql_query = sparql_query + "SELECT DISTINCT ?a\nWHERE{\n"
+	if(text.startswith("How many")):
+		sparql_query = sparql_query + "SELECT (COUNT(DISTINCT ?a) AS ?n)\nWHERE{\n"
+	elif("number of" in text):
+		sparql_query = sparql_query + "SELECT (COUNT(DISTINCT ?a) AS ?n)\nWHERE{\n"
+	else:
+		sparql_query = sparql_query + "SELECT DISTINCT ?a\nWHERE{\n"
 
 sub_flag=0
 subj=""
@@ -223,7 +230,7 @@ obj=""
 pred=""
 keywords_gen=refined_predicates+entities
 if(sub_flag):
-	if(subj!=""):
+	if(subj in entities):
 		if(len(keywords_gen)==3):
 			for i in pos_list:
 				if((i[0] in keywords_gen) and (i[1]=='VERB')):
@@ -231,16 +238,34 @@ if(sub_flag):
 			for i in keywords_gen:
 				if(i!=pred and i!=subj):
 					obj=i
-			sparql_query = sparql_query + "\tres:"+subj+"\tdbo:"+pred+"\t?x .\n"
-			sparql_query = sparql_query + "\t?x\trdf:type\tres:"+obj+" .\n"
+			if(obj in entities):
+				sparql_query = sparql_query + "\tres:"+subj+"\tdbo:"+pred+"\tres:"+obj+" .\n"
+			else:
+				sparql_query = sparql_query + "\tres:"+subj+"\tdbo:"+pred+"\t?x .\n"
+				sparql_query = sparql_query + "\t?x\trdf:type\tres:"+obj+" .\n"
 		elif(len(keywords_gen)==2):
 			for i in keywords_gen:
 				if(i!=subj):
 					pred=i
 			sparql_query = sparql_query + "\tres:"+subj+"\tdbo:"+pred+"\t?a .\n"
 	else:
-		print("HI")
-
+		if(len(keywords_gen)==2):
+			for i in pos_list:
+				if((i[0] in entities)):
+					obj=i[0]
+			for i in keywords_gen:
+				if(i!=obj):
+					pred=i
+			sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+" .\n"
+		elif(len(keywords_gen)==3):
+			for i in pos_list:
+				if((i[0] in keywords_gen) and (i[1]=='VERB')):
+					pred=i[0]
+			for i in pos_list:
+				if((i[0] in entities)):
+					obj=i[0]
+			sparql_query = sparql_query + "\t?x\tdbo:"+pred+"\tres:"+obj+" .\n"
+			sparql_query = sparql_query + "\t?x\trdf:type\tres:"+subj+" .\n"
 else:
 	if(len(keywords_gen)==2):
 		if(len(entities)==1):
@@ -255,7 +280,9 @@ else:
 				pred=i
 		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
 	if(len(keywords_gen)==3):
-		print("HI")
+		obj=entities[0]
+		pred=refined_predicates[0]+refined_predicates[1]
+		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
 
 
 sparql_query = sparql_query + "}"
