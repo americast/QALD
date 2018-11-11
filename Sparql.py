@@ -1,3 +1,5 @@
+# Generating SPARQL query
+
 from copy import copy
 from SPARQLWrapper import SPARQLWrapper, JSON
 import json
