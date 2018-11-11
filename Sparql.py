@@ -15,6 +15,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 spacy.load('en')
+import urllib
+import sys
 
 
 data_id = []
@@ -104,6 +106,9 @@ def entity_recogniser ( text ) :
 	return ( entities , text_pn_org )
 
 
+def edge_replacer(text):
+	return text.replace("high", "height").replace("employees","numberOfEmployees").replace("muchcost","budget").replace("tall","height")
+
 
 def predicate_recogniser( query,entities ):
 	query = query.strip(",")
@@ -159,8 +164,9 @@ getdata()
 
 
 
-text = input("Enter text: ")
+text = sys.argv[1]
 print("\n")
+text = text[1:]
 nlp = spacy.load('en_core_web_sm')
 doc = nlp(text)
 
@@ -256,7 +262,7 @@ if(sub_flag):
 			for i in keywords_gen:
 				if(i!=obj):
 					pred=i
-			sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+" .\n"
+			sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 		elif(len(keywords_gen)==3):
 			for i in pos_list:
 				if((i[0] in keywords_gen) and (i[1]=='VERB')):
@@ -264,7 +270,7 @@ if(sub_flag):
 			for i in pos_list:
 				if((i[0] in entities)):
 					obj=i[0]
-			sparql_query = sparql_query + "\t?x\tdbo:"+pred+"\tres:"+obj+" .\n"
+			sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?x .\n"
 			sparql_query = sparql_query + "\t?x\trdf:type\tres:"+subj+" .\n"
 else:
 	if(len(keywords_gen)==2):
@@ -278,12 +284,33 @@ else:
 		for i in keywords_gen:
 			if(i != obj):
 				pred=i
-		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
+		sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 	if(len(keywords_gen)==3):
 		obj=entities[0]
 		pred=refined_predicates[0]+refined_predicates[1]
-		sparql_query = sparql_query + "\t?a\tdbo:"+pred+"\tres:"+obj+".\n"
+		sparql_query = sparql_query + "\tres:"+obj+"\tdbo:"+pred+"\t?a .\n"
 
 
 sparql_query = sparql_query + "}"
+sparql_query = edge_replacer(sparql_query)
 print(sparql_query)
+
+api_url = "http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&query="
+text_here = urllib.parse.quote_plus(sparql_query)
+call_to = api_url+text_here+"&format=text%2Fhtml&CXML_redir_for_subjs=121&CXML_redir_for_hrefs=&timeout=30000&debug=on&run=+Run+Query+"
+
+# print(call_to)
+r = os.popen('curl -sX GET "'+call_to+'"').read()
+try:
+	ans = r.split("<pre>")[1].split("</pre>")[0]
+except:
+	try:
+		ans = "http"+str(r.split("http")[1].split("</a")[0])
+	except:
+		ans = "Unable to find an answer."
+
+print("\n\nAns: "+str(ans))
+
+f = open("out", "w")
+f.write(ans)
+f.close()
