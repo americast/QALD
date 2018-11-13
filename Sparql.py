@@ -53,7 +53,7 @@ def entity_recogniser ( text ) :
 		spotlight_ners_hyphenated.append((text_here[0].upper()+text_here[1:]).replace(" ","_"))
 
 
-	print("spotlight ners: "+str(spotlight_ners_hyphenated))
+	# print("spotlight ners: "+str(spotlight_ners_hyphenated))
 
 	text_pn = copy(text)
 
@@ -94,7 +94,7 @@ def entity_recogniser ( text ) :
 					entity_now=""
 				entity = ""
 
-	print("Entities finally: "+str(entities))
+	# print("Entities finally: "+str(entities))
 	# print(entities_org)
 
 	for i in range(len(entities)):
@@ -103,7 +103,7 @@ def entity_recogniser ( text ) :
 
 		text_pn_org = text_pn_org.replace(entity_org, entity)
 
-	print("Hyphenated queries: " + text_pn_org)
+	# print("Hyphenated queries: " + text_pn_org)
 
 	return ( entities , text_pn_org )
 
@@ -130,7 +130,7 @@ def predicate_recogniser( query,entities ):
 	#         filtered_tokens.append(w) 
 	  
 
-	print("filtered predicates: "+str(filtered_tokens)) 
+	# print("filtered predicates: "+str(filtered_tokens)) 
 
 	entities_l = [w.lower() for w in entities]
 	#print("l "+str(entities_l))
@@ -139,13 +139,13 @@ def predicate_recogniser( query,entities ):
 	for w in filtered_tokens:
 		if w.lower() not in entities_l:
 			raw_predicates.append(w)
-	print("raw predicates "+str(raw_predicates))
+	# print("raw predicates "+str(raw_predicates))
 	stemmed_predicates = []
 
 	for w in raw_predicates:
 		stemmed_predicates.append(porter_stemmer.stem(w))
 
-	print(stemmed_predicates)
+	# print(stemmed_predicates)
 	return stemmed_predicates, raw_predicates
 
 
@@ -167,7 +167,7 @@ getdata()
 
 
 text = sys.argv[1]
-print("\n")
+# print("\n")
 text = text[1:]
 nlp = spacy.load('en_core_web_sm')
 doc = nlp(text)
@@ -184,7 +184,7 @@ if(doc[0].text in boolean_query):
 
 
 entities , hyphenated_text = entity_recogniser(text)
-print("\n")
+# print("\n")
 
 text = text.strip()
 text = text.strip(",")
@@ -194,27 +194,27 @@ text = text.strip(":")
 text = text.strip(";")
 text = text.strip()
 
-print("\n")
+# print("\n")
 entities , hyphenated_text = entity_recogniser(text)
 
 doc = nlp(hyphenated_text)
 
 subject = [tok for tok in doc if(tok.dep_ == "nsubj")]
-print("\nsubject:" + str(subject) + "\n")
+# print("\nsubject:" + str(subject) + "\n")
 
 stemmed_predicates,refined_predicates = predicate_recogniser(hyphenated_text, entities)
 
 sparql_query="PREFIX dbo: <http://dbpedia.org/ontology/>\nPREFIX res: <http://dbpedia.org/resource/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 
 
-print("POS Tagging: ")
+# print("POS Tagging: ")
 pos_list = []
 for token in doc:
     pos_list.append((token.text, token.pos_, token.tag_, spacy.explain(token.tag_)))
-print(pos_list)
+# print(pos_list)
 
 
-print("\n")
+# print("\n")
 if(query_type):
 	sparql_query = sparql_query + "ASK\nWHERE{\n"
 else:
@@ -295,6 +295,7 @@ else:
 
 sparql_query = sparql_query + "}"
 sparql_query = edge_replacer(sparql_query)
+print()
 print(sparql_query)
 
 api_url = "http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&query="
