@@ -16,3 +16,5 @@ Otherwise, run the flask app using `python3 app.py` and answer interact from the
 Sample dataset used can be found at https://github.com/ag-sc/QALD/blob/master/7/data/qald-7-train-largescale.json.
 
 To open the front end, simply open `index.html` when inside the folder `qald-interface` from a browser.
+
+A partial implementation which uses Blazegraph hosted over a local network is available under `kmst.py`.
