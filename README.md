@@ -6,8 +6,8 @@
 
 The natural language queries are processed and transformed into SPARQL queries, which is used to lookup DBpedia to find a solution.
 
-Build using:  
-`./setup.sh`
+Install requirements using:  
+`pip3 install -r req.txt`
 
 Create a folder `data/` and place datasets there.  
 Run using `python3 Sparql.py`.

@@ -150,7 +150,7 @@ def predicate_recogniser( query,entities ):
 
 
 def getdata():
-    input_file = open('LargeDataset.json','r')
+    input_file = open('data/LargeDataset.json','r')
     json_decode=json.load(input_file)
     data = json_decode['questions']
     for item in data:
