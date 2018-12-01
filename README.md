@@ -10,7 +10,8 @@ Install requirements using:
 `pip3 install -r req.txt`
 
 Create a folder `data/` and place datasets there.  
-Run using `python3 Sparql.py`.
+Run the standalone implementation using `python3 Sparql.py "u<query>"`.  
+Otherwise, run the flask app using `python3 app.py` and answer interact from the frontend.
 
 Sample dataset used can be found at https://github.com/ag-sc/QALD/blob/master/7/data/qald-7-train-largescale.json.
 

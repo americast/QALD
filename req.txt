@@ -1,4 +1,5 @@
 nltk
 spacy
 SPARQLWrapper
-
+flask
+flask_socketio
