@@ -13,7 +13,7 @@ Create a folder `data/` and place datasets there.
 Run the standalone implementation using `python3 Sparql.py "u<query>"`.  
 Otherwise, run the flask app using `python3 app.py` and answer interact from the frontend.
 
-Sample dataset used can be found at https://github.com/ag-sc/QALD/blob/master/7/data/qald-7-train-largescale.json.
+Sample dataset used can be found at https://github.com/ag-sc/QALD/blob/master/7/data/qald-7-train-largescale.json .
 
 To open the front end, simply open `index.html` when inside the folder `qald-interface` from a browser.
 
